@@ -12,15 +12,7 @@ const helmet = require('helmet')
 const cors = require('cors')
 const xss = require('xss-clean')
 const rateLimiter = require('express-rate-limit')
- 
-//Begining of Oauth configuration
-const { google } = require('googleapis')
-const config = require('./config')
-const OAuth2 = google.auth.OAuth2
-
-const OAuth2_client = new OAuth2(config.clientId, config.clientSecret)
-OAuth2_client.setCredentials( { refresh_token : config.refreshToken })
-//End of Oauth configuration
+const { config } = require('dotenv')
 
 const app = express()
 
@@ -56,22 +48,16 @@ app.post('/send', (req, res) => {
         <h3>Message</h3>
         <p>${req.body.message}</p>
     `
-
-    const accessToken = OAuth2_client.getAccessToken
     let transporter = nodemailer.createTransport({
         service : 'gmail',
         auth : {
-            type : 'OAuth2',
-            user : config.user,
-            clientId : config.clientId,
-            clientSecret : config.clientSecret,
-            refreshToken : config.refreshToken,
-            accessToken : accessToken
+            user : process.env.user,
+            pass : process.env.pass
         }
     })
 
     let mailOptions = {
-        from : `FROM STEPHEN <${config.user}>`, // sender address
+        from : `FROM STEPHEN <${process.env.user}>`, // sender address
         to: `<${req.body.email}>`, // list of receivers
         subject: 'Greetings!', // Subject line
         text: `Hello ${req.body.name}. You are such an amazing person and the world needs more free spirited people like you. I just wanted to say thank you for your feedback!`, // plain text body
@@ -89,8 +75,8 @@ app.post('/send', (req, res) => {
     });
 
     let mailOptions2 = {        // This will send the mail to your email address
-        from : `FROM STEPHEN <${config.user}>`, // sender address
-        to: `<${config.user}>`, // list of receivers
+        from : `FROM STEPHEN <${process.env.user}>`, // sender address
+        to: `<${process.env.user}>`, // list of receivers
         subject: `Message from ${req.body.name}!`, // Subject line
         html: output // html body
     }; 
